@@ -21,8 +21,7 @@ function App() {
     reminderTime: '18:00'
   });
   const [globalSchedule, setGlobalSchedule] = useLocalStorage<GlobalSchedule>('globalSchedule', {
-    unavailableDates: [],
-    weeklyUnavailableDays: []
+    unavailableDates: []
   });
 
   const handleAddHomework = (homework: Homework) => {

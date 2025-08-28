@@ -13,14 +13,6 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
         return parsedValue.map((homework: Homework) => rescheduleHomework(homework));
       }
       
-      // globalScheduleの場合は必要なプロパティを初期化
-      if (key === 'globalSchedule' && parsedValue) {
-        return {
-          unavailableDates: parsedValue.unavailableDates || [],
-          weeklyUnavailableDays: parsedValue.weeklyUnavailableDays || []
-        };
-      }
-      
       return parsedValue;
     } catch (error) {
       console.error(`Error reading localStorage key "${key}":`, error);
