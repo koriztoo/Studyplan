@@ -29,7 +29,6 @@ export interface NotificationSettings {
 
 export interface GlobalSchedule {
   unavailableDates: string[];
-  weeklyUnavailableDays: number[]; // 0=日曜日, 1=月曜日, ..., 6=土曜日
 }
 
-export type ViewMode = 'today' | 'calendar' | 'register' | 'schedule' | 'settings' | 'edit';
+export type ViewMode = 'today' | 'calendar' | 'register' | 'settings' | 'edit';

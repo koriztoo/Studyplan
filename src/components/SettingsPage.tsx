@@ -4,10 +4,12 @@ import { NotificationSettings, GlobalSchedule } from '../types';
 
 interface SettingsPageProps {
   settings: NotificationSettings;
+  globalSchedule: GlobalSchedule;
   onUpdateSettings: (settings: NotificationSettings) => void;
+  onUpdateGlobalSchedule: (schedule: GlobalSchedule) => void;
 }
 
-export function SettingsPage({ settings, onUpdateSettings }: SettingsPageProps) {
+export function SettingsPage({ settings, globalSchedule, onUpdateSettings, onUpdateGlobalSchedule }: SettingsPageProps) {
   const handleToggleNotifications = () => {
     onUpdateSettings({
       ...settings,
@@ -37,6 +39,22 @@ export function SettingsPage({ settings, onUpdateSettings }: SettingsPageProps) 
     onUpdateSettings({
       ...settings,
       reminderTime: time
+    });
+  };
+
+  const handleAddGlobalUnavailableDate = (date: string) => {
+    if (date && !globalSchedule.unavailableDates.includes(date)) {
+      onUpdateGlobalSchedule({
+        ...globalSchedule,
+        unavailableDates: [...globalSchedule.unavailableDates, date].sort()
+      });
+    }
+  };
+
+  const handleRemoveGlobalUnavailableDate = (date: string) => {
+    onUpdateGlobalSchedule({
+      ...globalSchedule,
+      unavailableDates: globalSchedule.unavailableDates.filter(d => d !== date)
     });
   };
 
@@ -134,6 +152,73 @@ export function SettingsPage({ settings, onUpdateSettings }: SettingsPageProps) 
           </>
         )}
 
+        {/* Global Schedule */}
+        <div className="border-t pt-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Calendar className="text-cyan-300" size={24} />
+            <div>
+              <h3 className="font-semibold text-white">自分の予定</h3>
+              <p className="text-sm text-white/70">すべての宿題で利用不可日として適用されます</p>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <input
+                type="date"
+                id="global-unavailable-date-input"
+                className="input-field flex-1 px-3 py-2 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                onChange={(e) => {
+                  if (e.target.value) {
+                    handleAddGlobalUnavailableDate(e.target.value);
+                    e.target.value = '';
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const input = document.getElementById('global-unavailable-date-input') as HTMLInputElement;
+                  if (input.value) {
+                    handleAddGlobalUnavailableDate(input.value);
+                    input.value = '';
+                  }
+                }}
+                className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors flex items-center gap-2"
+              >
+                <Plus size={16} />
+                追加
+              </button>
+            </div>
+            
+            {globalSchedule.unavailableDates.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm text-white/70">登録された予定:</p>
+                <div className="flex flex-wrap gap-2">
+                  {globalSchedule.unavailableDates.map(date => (
+                    <div
+                      key={date}
+                      className="flex items-center gap-2 bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-lg text-sm"
+                    >
+                      <span>{new Date(date + 'T00:00:00').toLocaleDateString('ja-JP')}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveGlobalUnavailableDate(date)}
+                        className="text-cyan-400 hover:text-cyan-300 transition-colors"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <p className="text-sm text-white/60">
+              部活動、テスト、家族の予定など、すべての宿題に共通して影響する予定を登録してください
+            </p>
+          </div>
+        </div>
 
         {/* Info */}
         <div className="border-t pt-6">

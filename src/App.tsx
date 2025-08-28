@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { HomePage } from './components/HomePage';
 import { CalendarPage } from './components/CalendarPage';
 import { RegisterPage } from './components/RegisterPage';
-import { SchedulePage } from './components/SchedulePage';
 import { EditPage } from './components/EditPage';
 import { SettingsPage } from './components/SettingsPage';
 import { Navigation } from './components/Navigation';
@@ -25,12 +24,12 @@ function App() {
   });
 
   const handleAddHomework = (homework: Homework) => {
-    // 日別タスクを生成時にグローバル予定を考慮
-    const homeworkWithTasks = {
+    // グローバル予定を宿題の利用不可日に追加
+    const homeworkWithGlobalSchedule = {
       ...homework,
-      dailyTasks: generateDailyTasks(homework, globalSchedule)
+      unavailableDates: [...new Set([...homework.unavailableDates, ...globalSchedule.unavailableDates])].sort()
     };
-    setHomeworks([...homeworks, homeworkWithTasks]);
+    setHomeworks([...homeworks, homeworkWithGlobalSchedule]);
   };
 
   const handleEditHomework = (homework: Homework) => {
@@ -39,13 +38,13 @@ function App() {
   };
 
   const handleUpdateHomework = (updatedHomework: Homework) => {
-    // 日別タスクを再生成時にグローバル予定を考慮
-    const homeworkWithTasks = {
+    // グローバル予定を更新された宿題の利用不可日に追加
+    const homeworkWithGlobalSchedule = {
       ...updatedHomework,
-      dailyTasks: generateDailyTasks(updatedHomework, globalSchedule)
+      unavailableDates: [...new Set([...updatedHomework.unavailableDates, ...globalSchedule.unavailableDates])].sort()
     };
     setHomeworks(homeworks.map(hw => 
-      hw.id === updatedHomework.id ? homeworkWithTasks : hw
+      hw.id === updatedHomework.id ? homeworkWithGlobalSchedule : hw
     ));
     setEditingHomework(null);
     setCurrentView('today');
@@ -106,13 +105,19 @@ function App() {
   const handleUpdateGlobalSchedule = (newSchedule: GlobalSchedule) => {
     setGlobalSchedule(newSchedule);
     
-    // 既存のすべての宿題の日別タスクを再生成
+    // 既存のすべての宿題にグローバル予定を適用
     setHomeworks(homeworks.map(homework => {
-      const homeworkWithNewTasks = {
+      // 個別の利用不可日とグローバル予定をマージ
+      const individualUnavailableDates = homework.unavailableDates.filter(date => 
+        !globalSchedule.unavailableDates.includes(date)
+      );
+      const updatedHomework = {
         ...homework,
-        dailyTasks: generateDailyTasks(homework, newSchedule)
+        unavailableDates: [...new Set([...individualUnavailableDates, ...newSchedule.unavailableDates])].sort()
       };
-      return rescheduleHomework(homeworkWithNewTasks);
+      
+      // 日別タスクを再生成
+      return rescheduleHomework(updatedHomework);
     }));
   };
 
@@ -129,11 +134,6 @@ function App() {
         return <CalendarPage homeworks={homeworks} />;
       case 'register':
         return <RegisterPage onAddHomework={handleAddHomework} />;
-      case 'schedule':
-        return <SchedulePage 
-          globalSchedule={globalSchedule}
-          onUpdateGlobalSchedule={handleUpdateGlobalSchedule}
-        />;
       case 'edit':
         return editingHomework ? (
           <EditPage 
@@ -146,7 +146,9 @@ function App() {
       case 'settings':
         return <SettingsPage 
           settings={settings} 
+          globalSchedule={globalSchedule}
           onUpdateSettings={handleUpdateSettings}
+          onUpdateGlobalSchedule={handleUpdateGlobalSchedule}
         />;
       default:
         return <HomePage homeworks={homeworks} onToggleComplete={handleToggleComplete} onEditHomework={handleEditHomework} />;

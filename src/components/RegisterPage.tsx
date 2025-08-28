@@ -57,8 +57,7 @@ export function RegisterPage({ onAddHomework }: RegisterPageProps) {
       dailyTasks: []
     };
 
-    // 日別タスクの生成はApp.tsxで行うため、ここでは空配列を設定
-    homework.dailyTasks = [];
+    homework.dailyTasks = generateDailyTasks(homework);
     onAddHomework(homework);
     
     // Reset form

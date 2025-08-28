@@ -94,9 +94,7 @@ export function EditPage({ homework, onUpdateHomework, onDeleteHomework, onCance
       homework.estimatedTime !== formData.estimatedTime ||
       JSON.stringify(homework.unavailableDates || []) !== JSON.stringify(formData.unavailableDates)
     ) {
-      // 日別タスクの再生成はApp.tsxで行うため、ここでは既存のタスクを保持
-      // 変更フラグとして空配列を設定し、App.tsxで再生成される
-      updatedHomework.dailyTasks = [];
+      updatedHomework.dailyTasks = generateDailyTasks(updatedHomework);
     }
 
     onUpdateHomework(updatedHomework);

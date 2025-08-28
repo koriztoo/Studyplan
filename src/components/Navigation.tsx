@@ -12,7 +12,6 @@ export function Navigation({ currentView, onViewChange }: NavigationProps) {
     { id: 'today' as ViewMode, label: 'ホーム', icon: Home },
     { id: 'calendar' as ViewMode, label: 'カレンダー', icon: Calendar },
     { id: 'register' as ViewMode, label: '登録', icon: Plus },
-    { id: 'schedule' as ViewMode, label: '予定', icon: Calendar },
     { id: 'settings' as ViewMode, label: '設定', icon: Settings }
   ];
 

@@ -1,32 +1,6 @@
 import { Homework, DailyTask } from '../types';
 import { getDateRange } from './dateUtils';
 
-import { GlobalSchedule } from '../types';
-
-// 毎週の利用不可日を特定の期間の日付リストに変換
-export function getWeeklyUnavailableDates(weeklyDays: number[], startDate: string, endDate: string): string[] {
-  if (weeklyDays.length === 0) return [];
-  
-  const dates: string[] = [];
-  const current = new Date(startDate + 'T00:00:00');
-  const end = new Date(endDate + 'T00:00:00');
-  
-  while (current <= end) {
-    const dayOfWeek = current.getDay();
-    if (weeklyDays.includes(dayOfWeek)) {
-      const year = current.getFullYear();
-      const month = String(current.getMonth() + 1).padStart(2, '0');
-      const day = String(current.getDate()).padStart(2, '0');
-      dates.push(`${year}-${month}-${day}`);
-    }
-    current.setDate(current.getDate() + 1);
-  }
-  
-  return dates;
-}
-
-import { generateDailyTasks } from './homeworkUtils';
-
 export function rescheduleHomework(homework: Homework): Homework {
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -80,7 +54,7 @@ export function rescheduleHomework(homework: Homework): Homework {
   return { ...homework, dailyTasks: updatedTasks };
 }
 
-export function generateDailyTasks(homework: Homework, globalSchedule?: GlobalSchedule): DailyTask[] {
+export function generateDailyTasks(homework: Homework): DailyTask[] {
   const { dueDate, targetCompleteDate, pages, estimatedTime, unavailableDates = [] } = homework;
   
   // 今日の日付を正確に取得（タイムゾーンを考慮）
@@ -92,25 +66,8 @@ export function generateDailyTasks(homework: Homework, globalSchedule?: GlobalSc
     targetCompleteDate
   );
   
-  // グローバル予定から毎週の利用不可日を取得
-  let combinedUnavailableDates = [...unavailableDates];
-  
-  if (globalSchedule) {
-    // 特定日付の予定を追加
-    combinedUnavailableDates = [...combinedUnavailableDates, ...globalSchedule.unavailableDates];
-    
-    // 毎週の予定を追加
-    const weeklyUnavailableDates = getWeeklyUnavailableDates(
-      globalSchedule.weeklyUnavailableDays,
-      todayStr,
-      targetCompleteDate
-    );
-    combinedUnavailableDates = [...combinedUnavailableDates, ...weeklyUnavailableDates];
-  }
-  
-  // 重複を除去して利用不可日を除外
-  const uniqueUnavailableDates = [...new Set(combinedUnavailableDates)];
-  const availableDates = allDates.filter(date => !uniqueUnavailableDates.includes(date));
+  // 利用不可日を除外
+  const availableDates = allDates.filter(date => !unavailableDates.includes(date));
   
   if (availableDates.length === 0) return [];
   
